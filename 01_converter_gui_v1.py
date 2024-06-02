@@ -37,7 +37,7 @@ class Converter:
 
         error = "Please enter a number"
         self.altitude_error = Label(self.altitude_frame,
-                                    text=error,
+                                    text="",
                                     fg="#9A1B00")
         self.altitude_error.grid(row=3)
 
@@ -49,30 +49,58 @@ class Converter:
                                        text="To metres",
                                        bg=button_bg_metre,
                                        fg=button_fg,
-                                       font=button_font, width=12)
+                                       font=button_font,
+                                       width=12,
+                                       command=self.to_metres
+                                       )
         self.to_metres_button.grid(row=0, column=0, padx=5, pady=5)
 
         self.to_feet_button = Button(self.button_frame,
                                      text="To feet",
                                      bg=button_bg_feet,
                                      fg=button_fg,
-                                     font=button_font, width=12)
+                                     font=button_font,
+                                     width=12
+                                     )
         self.to_feet_button.grid(row=0, column=1, padx=5, pady=5)
 
         self.help_button = Button(self.button_frame,
                                   text="Help/Info",
                                   bg=button_bg_help,
                                   fg=button_fg,
-                                  font=button_font, width=12)
+                                  font=button_font,
+                                  width=12
+                                  )
         self.help_button.grid(row=1, column=0, padx=5, pady=5)
 
         self.history_button = Button(self.button_frame,
-                                     text="To feet",
+                                     text="History/Export",
                                      bg=button_bg_history,
                                      fg=button_fg,
-                                     font=button_font, width=12,
-                                     state=DISABLED)
+                                     font=button_font,
+                                     width=12,
+                                     state=DISABLED
+                                     )
         self.history_button.grid(row=1, column=1, padx=5, pady=5)
+
+    def check_altitude(self, min_value):
+        error = "Please enter a number that is more than {}".format(min_value)
+
+        try:
+            response = self.altitude_entry.get()
+            response = float(response)
+
+            if response < min_value:
+                self.altitude_error.config(text=error)
+            else:
+                return response
+
+        except ValueError:
+            self.altitude_error.config(text=error)
+
+    def to_metres(self):
+
+        self.check_altitude(0)
 
 
 # main routine
