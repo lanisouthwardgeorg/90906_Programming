@@ -5,6 +5,13 @@ class Converter:
 
     def __init__(self):
 
+        # initialise variables (such as feedback variable)
+        self.var_feedback = StringVar()
+        self.var_feedback.set("")
+
+        self.var_has_error = StringVar()
+        self.var_has_error.set("no")
+
         # common format for all buttons (Arial size 14, bold, white text)
         button_font = ("Arial", "14", "bold")
         button_fg = "#000000"
@@ -38,10 +45,10 @@ class Converter:
         self.altitude_entry.grid(row=2, padx=10, pady=10)
 
         error = "Please enter a number"
-        self.altitude_error = Label(self.altitude_frame,
-                                    text="",
-                                    fg="#9A1B00")
-        self.altitude_error.grid(row=3)
+        self.output_label = Label(self.altitude_frame,
+                                  text="",
+                                  fg="#9A1B00")
+        self.output_label.grid(row=3)
 
         # conversion, help and history/export buttons
         self.button_frame = Frame(self.altitude_frame)
@@ -62,7 +69,8 @@ class Converter:
                                      bg=button_bg_feet,
                                      fg=button_fg,
                                      font=button_font,
-                                     width=12
+                                     width=12,
+                                     command=self.to_feet
                                      )
         self.to_feet_button.grid(row=0, column=1, padx=5, pady=5)
 
@@ -91,9 +99,10 @@ class Converter:
         has_error = "no"
         error = "Please enter a number that is more than {}".format(min_value)
 
+        response = self.altitude_entry.get()
+
         # check that user has entered a valid number
         try:
-            response = self.altitude_entry.get()
             response = float(response)
 
             if response < min_value:
@@ -102,18 +111,58 @@ class Converter:
         except ValueError:
             has_error = "yes"
 
-        # if the number is invalid, display error message
+        # sets var_has_error so that entry box and labels can be correctly formatted by formatting function
         if has_error == "yes":
-            self.altitude_error.config(text=error, fg="#9C0000")
+            self.var_has_error.set("yes")
+            self.var_feedback.set(error)
+            return "invalid"
+
+        # if no errors
         else:
-            self.altitude_error.config(text="Success", fg="blue")
+            # set to 'no' in case of previous errors
+            self.var_has_error.set("no")
 
-            # if we have at least one valid calculation, enable history/export button
+            # return number to be converted and enable history button
             self.history_button.config(state=NORMAL)
+            return response
 
+    # check altitude is more than 0 and convert it to metres
     def to_metres(self):
+        to_convert = self.check_altitude(0)
 
-        self.check_altitude(0)
+        if to_convert != "invalid":
+            # do calculation
+            self.var_feedback.set("Converting {} to "
+                                  "metres".format(to_convert))
+
+        self.output_answer()
+
+    # check altitude is more than 0 and convert it to feet
+    def to_feet(self):
+        to_convert = self.check_altitude(0)
+
+        if to_convert != "invalid":
+            # do calculation
+            self.var_feedback.set("Converting {} to "
+                                  "feet".format(to_convert))
+
+        self.output_answer()
+
+    # shows user output and clears entry widget ready for next calculation
+    def output_answer(self):
+        output = self.var_feedback.get()
+        has_errors = self.var_has_error.get()
+
+        if has_errors == "yes":
+            # red text, pink entry box
+            self.output_label.config(fg="#9C0000")
+            self.altitude_entry.config(bg="#F8CECC")
+
+        else:
+            self.output_label.config(fg="#004C00")
+            self.altitude_entry.config(bg="#FFFFFF")
+
+        self.output_label.config(text=output)
 
 
 # main routine
