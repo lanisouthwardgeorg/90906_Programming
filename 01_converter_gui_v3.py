@@ -12,6 +12,8 @@ class Converter:
         self.var_has_error = StringVar()
         self.var_has_error.set("no")
 
+        self.all_calculations = []
+
         # common format for all buttons (Arial size 14, bold, white text)
         button_font = ("Arial", "14", "bold")
         button_fg = "#000000"
@@ -60,7 +62,7 @@ class Converter:
                                        fg=button_fg,
                                        font=button_font,
                                        width=12,
-                                       command=self.to_metres
+                                       command=lambda: self.altitude_convert(0)
                                        )
         self.to_metres_button.grid(row=0, column=0, padx=5, pady=5)
 
@@ -70,7 +72,7 @@ class Converter:
                                      fg=button_fg,
                                      font=button_font,
                                      width=12,
-                                     command=self.to_feet
+                                     command=lambda: self.altitude_convert(0)
                                      )
         self.to_feet_button.grid(row=0, column=1, padx=5, pady=5)
 
@@ -126,25 +128,46 @@ class Converter:
             self.history_button.config(state=NORMAL)
             return response
 
-    # check altitude is more than 0 and convert it to metres
-    def to_metres(self):
-        to_convert = self.check_altitude(0)
+    @staticmethod
+    def round_ans(val):
+        var_rounded = (val * 2 + 1) // 2
+        return "{:.0f}".format(var_rounded)
 
-        if to_convert != "invalid":
+    # check altitude is valid and convert it
+    def altitude_convert(self, min_val):
+        to_convert = self.check_altitude(min_val)
+
+        set_feedback = "yes"
+        answer = ""
+        from_to = ""
+
+        if to_convert == "invalid":
+            set_feedback = "no"
+
+        # convert to metres
+        elif min_val == 0:
             # do calculation
-            self.var_feedback.set("Converting {} to "
-                                  "metres".format(to_convert))
+            answer = to_convert / 3.281
+            from_to = "{} f is {} m"
 
-        self.output_answer()
+        # convert to feet
+        else:
+            answer = to_convert * 3.281
+            from_to = "{} f is {} m"
 
-    # check altitude is more than 0 and convert it to feet
-    def to_feet(self):
-        to_convert = self.check_altitude(0)
+        if set_feedback == "yes":
+            to_convert = self.round_ans(to_convert)
+            answer = self.round_ans(answer)
 
-        if to_convert != "invalid":
-            # do calculation
-            self.var_feedback.set("Converting {} to "
-                                  "feet".format(to_convert))
+            # create user output and add to calculation history
+            feedback = from_to.format(to_convert,
+                                      answer)
+            self.var_feedback.set(feedback)
+
+            self.all_calculations.append(feedback)
+
+            # delete code below when history component is working
+            print(self.all_calculations)
 
         self.output_answer()
 
